@@ -25,7 +25,7 @@ def generate_launch_description():
             ]
         ),
         # Node(
-        #     package='ros2_cpp_template',
+        #     package='kal_d98',
         #     executable='simple_sub_node',
         #     output='screen',
         # ),
