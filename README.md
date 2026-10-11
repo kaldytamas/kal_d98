@@ -1,56 +1,83 @@
-# `kal_d98` package
-ROS 2 C++ package.  [![Static Badge](https://img.shields.io/badge/ROS_2-Humble-34aec5)](https://docs.ros.org/en/humble/)
-## Packages and build
+# kal_d98: teknős mozgatása és pozíciójának naplózása
 
-It is assumed that the workspace is `~/ros2_ws/`.
+ROS 2 C++ package a "Autonóm járművek és robotok programozása" tárgy kis beadandójához.
+[![Static Badge](https://img.shields.io/badge/ROS_2-Humble-34aec5)](https://docs.ros.org/en/humble/)
 
-### Clone the packages
-``` r
+Szerző: Káldy Tamás
+
+## Leírás
+
+A package két node-ból áll, amelyek a `turtlesim` szimulátorral dolgoznak együtt:
+
+- **`mover_node`** (publisher): `geometry_msgs/msg/Twist` üzeneteket küld a `/turtle1/cmd_vel` topicra. A teknős egy négyzet alakú pályát jár be: 2 másodpercig egyenesen megy, majd kb. 90 fokot fordul, és ezt ismétli.
+- **`pose_logger_node`** (subscriber): feliratkozik a `/turtle1/pose` topicra (`turtlesim/msg/Pose`), és másodpercenként egyszer kiírja a teknős `x`, `y` és `theta` értékét.
+
+## Függőségek
+
+- ROS 2 Humble
+- `turtlesim` (`sudo apt install ros-humble-turtlesim`, ha nincs telepítve)
+
+## Build
+
+Feltételezzük, hogy a workspace a `~/ros2_ws/`.
+
+```bash
 cd ~/ros2_ws/src
-```
-``` r
 git clone https://github.com/kaldytamas/kal_d98
-```
-
-### Build ROS 2 packages
-``` r
 cd ~/ros2_ws
-```
-``` r
 colcon build --packages-select kal_d98 --symlink-install
 ```
 
-<details>
-<summary> Don't forget to source before ROS commands.</summary>
+## Futtatás
 
-``` bash
+Ne felejtsünk source-olni a ROS parancsok előtt.
+
+```bash
 source ~/ros2_ws/install/setup.bash
-```
-</details>
-
-``` r
-ros2 launch kal_d98 launch_example1.launch.py
+ros2 launch kal_d98 turtle.launch.py
 ```
 
-# Delete this part if you are using it as a template
+A launch fájl egyszerre indítja a `turtlesim_node`-ot, a `mover_node`-ot és a `pose_logger_node`-ot. Leállítani `Ctrl+C`-vel lehet.
 
-ROS 2 pacage template, to get started, use template by clicking on the Green button labeled [`Use this template`](https://github.com/kaldytamas/kal_d98/generate) / [`Create new repository`](https://github.com/kaldytamas/kal_d98/generate). 
+## Node-topic kapcsolatok
 
-<p align="center"><img src="img/use_this_template01.png" width="60%" /></p>
+```mermaid
+flowchart LR
+    M([mover_node]):::red -->|geometry_msgs/msg/Twist| C["/turtle1/cmd_vel"]:::light
+    C --> T([turtlesim_node]):::red
+    T -->|turtlesim/msg/Pose| P["/turtle1/pose"]:::light
+    P --> L([pose_logger_node]):::red
 
+    classDef light fill:#34aec5,stroke:#152742,stroke-width:2px,color:#152742
+    classDef red fill:#ef4638,stroke:#152742,stroke-width:2px,color:#fff
+```
 
-Let's assume 
-- your Github username is `mycoolusername`
-- your ROS 2 repo shold be `cool_ros2_package`
+| Node | Publikál | Feliratkozik |
+|---|---|---|
+| `mover_node` | `/turtle1/cmd_vel` (`geometry_msgs/msg/Twist`) | – |
+| `turtlesim_node` | `/turtle1/pose` (`turtlesim/msg/Pose`) | `/turtle1/cmd_vel` |
+| `pose_logger_node` | – | `/turtle1/pose` |
 
-Replace everything in the cloned repo:
+## Eredmény
 
-- `kal_d98` >> `cool_ros2_package` (the folder was already renamed after `Use this template`)
-- `kaldytamas` >> `mycoolusername`
-- find all `todo` strings and fill the blanks
+A teknős mozgása a szimulátorban:
 
-The easiest way is VS code:
+![A teknős útja](img/turtle_path.png)
 
-<p align="center"><img src="img/replace01.png" width="60%" /></p>
+A `pose_logger_node` kimenete:
 
-Now `colcon build` your ROS 2 package and you can start wokring.
+![A pozíció naplózása](img/terminal_output.png)
+
+## Fájlok
+
+```
+kal_d98/
+├── CMakeLists.txt
+├── package.xml
+├── launch/
+│   └── turtle.launch.py
+├── src/
+│   ├── mover_node.cpp
+│   └── pose_logger_node.cpp
+└── img/
+```
