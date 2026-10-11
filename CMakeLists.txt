@@ -14,21 +14,27 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(turtlesim REQUIRED)
 
 set(ament_dependencies
   rclcpp
   std_msgs
   geometry_msgs
+  turtlesim
 )
 
 add_executable(mover_node src/mover_node.cpp)
 ament_target_dependencies(mover_node ${ament_dependencies})
+
+add_executable(pose_logger_node src/pose_logger_node.cpp)
+ament_target_dependencies(pose_logger_node ${ament_dependencies})
 
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME})
 
 install(TARGETS
   mover_node
+  pose_logger_node
   DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
